@@ -9,8 +9,8 @@ export interface Node<T> extends ILinkedListNode<T> {
 
 export interface ILinkedList<T> {
   size: () => number;
-  head: () => Readonly<Node<T> | undefined>;
-  tail: () => Readonly<Node<T> | undefined>;
+  head: () => Readonly<Node<T> | void>;
+  tail: () => Readonly<Node<T> | void>;
   get: (index: number) => T | void;
   getNode: (index: number) => Node<T> | void;
   getNthFromLast: (index: number) => Node<T> | void;
@@ -36,12 +36,12 @@ export default class LinkedList<T> implements ILinkedList<T> {
     return this.nNodes;
   }
 
-  head(): Readonly<Node<T> | undefined> {
-    return Object.freeze(this.headNode);
+  head(): Readonly<Node<T> | void> {
+    return this.headNode;
   }
 
-  tail(): Readonly<Node<T> | undefined> {
-    return Object.freeze(this.tailNode);
+  tail(): Readonly<Node<T> | void> {
+    return this.tailNode;
   }
 
   get(index: number): T | void {
@@ -52,18 +52,15 @@ export default class LinkedList<T> implements ILinkedList<T> {
   }
 
   getNode(index: number): Node<T> | void {
-    if (index < 0 || index > this.nNodes || !this.headNode) {
-      return;
+    if (index < 0 || index > this.nNodes) { return; }
+
+    let h = this.headNode;
+    let i = index;
+    while (h && i > 0) {
+      h = h.next;
+      i -= 1;
     }
-    let i = 0;
-    let node = this.headNode;
-    while (i < index && node.next) {
-      node = node.next;
-      i += 1;
-    }
-    if (i === index) {
-      return node;
-    }
+    return h;
   }
 
   getNthFromLast(index: number): Node<T> | void {

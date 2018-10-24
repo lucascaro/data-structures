@@ -1,6 +1,7 @@
 import log from '@helpers/log';
 import LinkedList from './classes/LinkedList';
 import DoublyLinkedList from './classes/DoublyLinkedList';
+import ClasslessLinkedList from './classless/ClasslessLinkedList';
 
 log('Comparing runtimes');
 const size = 1e6;
@@ -26,6 +27,13 @@ timeFn('LL', 'Creating LL w/append', () => {
   }
 });
 
+timeFn('CLL', 'Creating CLL w/append', () => {
+  const ll = ClasslessLinkedList.create();
+  for (let i = 0; i < size; i += 1) {
+    ll.append(i);
+  }
+});
+
 timeFn('DLL', 'Creating DLL w/prepend', () => {
   const dll = new DoublyLinkedList();
   for (let i = 0; i < size; i += 1) {
@@ -44,6 +52,10 @@ const ll = new LinkedList();
 for (let i = 0; i < size; i += 1) {
   ll.prepend(i);
 }
+const cll = ClasslessLinkedList.create();
+for (let i = 0; i < size; i += 1) {
+  cll.prepend(i);
+}
 const dll = new DoublyLinkedList();
 for (let i = 0; i < size; i += 1) {
   dll.prepend(i);
@@ -54,6 +66,11 @@ timeFn('LL', 'Traversing LL', () => {
     ll.get(midPoint);
   }
 });
+timeFn('CLL', 'Traversing CLL', () => {
+  for (let i = 0; i < 1e3; i += 1) {
+    cll.get(midPoint);
+  }
+});
 timeFn('DLL', 'Traversing DLL', () => {
   for (let i = 0; i < 1e3; i += 1) {
     dll.get(midPoint);
@@ -62,6 +79,11 @@ timeFn('DLL', 'Traversing DLL', () => {
 timeFn('LL', 'Reverse Traversing LL', () => {
   for (let i = 0; i < 1e3; i += 1) {
     ll.getNthFromLast(midPoint);
+  }
+});
+timeFn('CLL', 'Reverse Traversing CLL', () => {
+  for (let i = 0; i < 1e3; i += 1) {
+    cll.getNthFromLast(midPoint);
   }
 });
 timeFn('DLL', 'Reverse Traversing DLL', () => {
@@ -77,6 +99,6 @@ timeFn('LL', 'Deleting element', () => {
 });
 timeFn('DLL', 'Deleting element', () => {
   for (let i = 0; i < 1e3; i += 1) {
-    dll.deleteAt(Math.floor(ll.size() / 2));
+    dll.deleteAt(Math.floor(dll.size() / 2));
   }
 });
