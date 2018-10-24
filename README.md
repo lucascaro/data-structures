@@ -1,10 +1,10 @@
-# Typescript Node Starter
+# Data Structures
 
-A simple node.js project starter for typescript.
+Implementation of basic data structures in TypeScript, for fun.
 
 ## Usage
 
-Simply download, run `npm i` and start adding code in `./src`.
+Simply download and run `npm i`.
 
 ### Compiling
 
@@ -26,18 +26,9 @@ Listens and recompiles the project on src changes.
 npm start
 ```
 
-Runs the main command.
-
-```shell
-npm link
-ts-node-starter-cli
-```
-
-Creates a symlink so you can run the project as a cli tool. Change the default binary name in `package.json`.
-
 ### Testing
 
-Tests are in the `./test/` directory.
+Tests are in their respective `**/__test__/` directories.
 
 ```shell
 npm test
