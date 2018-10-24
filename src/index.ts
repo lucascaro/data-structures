@@ -97,6 +97,11 @@ timeFn('LL', 'Deleting element', () => {
     ll.deleteAt(Math.floor(ll.size() / 2));
   }
 });
+timeFn('CLL', 'Deleting element', () => {
+  for (let i = 0; i < 1e3; i += 1) {
+    cll.deleteAt(Math.floor(cll.size() / 2));
+  }
+});
 timeFn('DLL', 'Deleting element', () => {
   for (let i = 0; i < 1e3; i += 1) {
     dll.deleteAt(Math.floor(dll.size() / 2));

@@ -1,6 +1,10 @@
+/**
+ * Note: Due to the performance drawbacks it does not make sense to implement
+ * an immutable linked list. But I'm doing it just for fun.
+ */
 import { ILinkedList } from '@src/classes/LinkedList';
 
-namespace ClasslessLinkedList {
+namespace ImmutableLinkedList {
   export interface LinkedList<T> extends ILinkedList<T>  {
     size: () => number;
     head: () => Readonly<MaybeNode<T>>;
@@ -33,7 +37,16 @@ namespace ClasslessLinkedList {
 
   type MaybeNode<T> = Node<T> | void;
 
-  export function create<T>(): LinkedList <T> {
+  export function create<T>(): LinkedList<T> {
+    const newState = Object.freeze({
+      head: undefined,
+      tail: undefined,
+      size: 0,
+    });
+    return fromState(newState);
+  }
+
+  function fromState<T>(newState: Readonly<State<T>>): LinkedList <T> {
 
     const l: LinkedList<T> = {
       size,
@@ -54,11 +67,8 @@ namespace ClasslessLinkedList {
       deleteValue,
     };
 
-    const state: State<T> = {
-      head: undefined,
-      tail: undefined,
-      size: 0,
-    };
+    // Use object spread for shallow copy.
+    const state: State<T> = Object.freeze({ ...newState });
 
     function size(): number {
       return state.size;
@@ -89,18 +99,24 @@ namespace ClasslessLinkedList {
     }
     function append(value: T): ILinkedList<T> {
       const newNode = { value };
+      // TODO: don't mutate the tail node.
       if (state.tail) { state.tail.next = newNode; }
-      if (!state.head) { state.head = newNode; }
-      state.tail = newNode;
-      state.size += 1;
-      return l;
+      const newState = {
+        tail: newNode,
+        size: state.size + 1,
+        head: state.head || newNode,
+      };
+
+      return fromState(newState);
     }
     function prepend(value: T): ILinkedList<T> {
       const newNode = { value, next: state.head };
-      if (!state.tail) { state.tail = newNode; }
-      state.head = newNode;
-      state.size += 1;
-      return l;
+      const newState = {
+        head: newNode,
+        size: state.size + 1,
+        tail: state.tail || newNode,
+      };
+      return fromState(newState);
     }
     function insertAt(value: T, position: number): ILinkedList<T> {
       if (position < 0 || position > state.size) {
@@ -111,18 +127,24 @@ namespace ClasslessLinkedList {
       // Parent exists since we are inserting at the body.
       const parent = getNode(position - 1) as Node<T>;
       const newNode: Node<T> = { value, next: parent.next };
+      // TODO: nomut
       parent.next = newNode;
-      state.size += 1;
-      return l;
+      const newState = {
+        ...state,
+        size: state.size + 1,
+      };
+      return fromState(newState);
     }
     function insertAfter(value: T, parent: Node<T>): ILinkedList<T> {
       const newNode = { value, next: parent.next };
+      // TODO: nomut
       parent.next = newNode;
-      if (parent === state.tail) {
-        state.tail = newNode;
-      }
-      state.size += 1;
-      return l;
+      const newState = {
+        ...state,
+        tail: parent === state.tail ? newNode : state.tail,
+        size: state.size + 1,
+      };
+      return fromState(newState);
     }
     function find(predicate: (node: Node<T>) => boolean): MaybeNode<T> {
       let n = state.head;
@@ -154,25 +176,20 @@ namespace ClasslessLinkedList {
       if (position < 0 || position >= state.size) {
         throw new Error(`element ${position} does not exist.`);
       }
-      if (position === 0) {
-        // We know head exists because an error is thrown above if size is 0.
-        state.head = state.head!.next;
-        if (position === state.size - 1) {
-          state.tail = state.head;
-        }
-      } else {
-        // An element with index position - 1 is guaranteed to exist since
-        // at this point position > 0 && position < size.
-        const parent = getNode(position - 1) as Node<T>;
-        // We know parent.next is defined because position - 1 can't be the last
-        // node since position < size.
+      // TODO: nomut
+      const parent = getNode(position - 1) as Node<T>;
+      if (parent && parent.next) {
         parent.next = parent.next!.next;
-        if (position === state.size - 1) {
-          state.tail = parent;
-        }
       }
-      state.size -= 1;
-      return l;
+      const head = position === 0 ? state.head!.next : state.head;
+      const tail = position === state.size - 1 ? parent || head : state.tail;
+      const newState = {
+        ...state,
+        head,
+        tail,
+        size: state.size - 1,
+      };
+      return fromState(newState);
     }
     function deleteValue(value: T): ILinkedList<T> {
       const index = findIndexByValue(value);
@@ -187,4 +204,4 @@ namespace ClasslessLinkedList {
 
 }
 
-export default ClasslessLinkedList;
+export default ImmutableLinkedList;
