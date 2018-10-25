@@ -39,7 +39,33 @@ export default class BinaryTree<T> implements ITree<T> {
     return this.findBFS(node => !node.left || !node.right);
   }
 
+  /**
+   * Delete an element and replace it by the bottom-most and right-most element.
+   */
   delete(value: T): this {
+    const node = this.findNLR(n => n.value === value);
+    if (!node) {
+      throw new Error(`cannot find value ${value} in the tree`);
+    }
+    const allNodes = this.mapBFS(n => n);
+    const replacement = allNodes[allNodes.length - 1];
+    node.value = replacement.value;
+    return this.dettachSubtree(replacement);
+  }
+
+  dettachSubtree(node: ITreeNode<T>): this {
+    if (!node.parent) {
+      this.rootNode = undefined;
+      this.nNodes = 0;
+    } else {
+      if (node.parent.left === node) {
+        node.parent.left = undefined;
+      } else {
+        node.parent.right = undefined;
+      }
+      const subTreeNodes = this.mapNodeBFS(node, n => n);
+      this.nNodes -= subTreeNodes.length;
+    }
     return this;
   }
 
@@ -59,7 +85,7 @@ export default class BinaryTree<T> implements ITree<T> {
     return this.mapLRN(n => n.value);
   }
 
-  mapBFS<U>(fn: (n: ITreeNode<T>) => U): U[] {
+  mapNodeBFS<U>(rootNode: MaybeNode<T>, fn: (n: ITreeNode<T>) => U): U[] {
     const recursion = (maybeNodes: MaybeNode<T>[]): U[] => {
       const res = [];
       const nodes = maybeNodes.filter(n => n) as ITreeNode<T>[];
@@ -70,7 +96,10 @@ export default class BinaryTree<T> implements ITree<T> {
       }
       return res;
     };
-    return recursion([this.rootNode]);
+    return recursion([rootNode]);
+  }
+  mapBFS<U>(fn: (n: ITreeNode<T>) => U): U[] {
+    return this.mapNodeBFS(this.rootNode, fn);
   }
 
   findBFS(fn: (n: ITreeNode<T>) => boolean): MaybeNode<T> {
