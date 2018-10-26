@@ -98,19 +98,31 @@ namespace ImmutableLinkedList {
       return getNode(state.size - index - 1);
     }
     function append(value: T): ILinkedList<T> {
-      const newNode = { value };
+      const newNode: Node<T> = { value: Object.freeze(value) };
       // TODO: don't mutate the tail node.
       if (state.tail) { state.tail.next = newNode; }
+      // Temporary mutability to ensure immutability.
+      const newHead = state.head ? { ...state.head } : newNode ;
+      let node = newHead;
+      // Copy each node, mutating its next pointer.
+      // TODO: this is prohibitively slow.
+      while (node.next) {
+        node.next = { ...node.next };
+        node = node.next;
+      }
+      if (newHead !== newNode) {
+        node.next = newNode;
+      }
       const newState = {
         tail: newNode,
         size: state.size + 1,
-        head: state.head || newNode,
+        head: newHead,
       };
 
       return fromState(newState);
     }
     function prepend(value: T): ILinkedList<T> {
-      const newNode = { value, next: state.head };
+      const newNode = { value: Object.freeze(value), next: state.head };
       const newState = {
         head: newNode,
         size: state.size + 1,
